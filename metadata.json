@@ -1,0 +1,5 @@
+{
+  "name": "GM Celular - Catálogo Digital",
+  "description": "Um catálogo digital para a loja GM Celular, exibindo produtos e facilitando o contato via WhatsApp. Inclui um painel administrativo para gerenciamento de produtos, categorias e banners.",
+  "requestFramePermissions": []
+}
