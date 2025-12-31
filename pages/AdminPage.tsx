@@ -45,7 +45,7 @@ const AdminPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+        <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200">
             {/* Sidebar */}
             <aside className="w-64 flex-shrink-0 bg-white dark:bg-gray-800 shadow-md flex flex-col">
                 <div className="h-20 flex items-center justify-center border-b dark:border-gray-700">
