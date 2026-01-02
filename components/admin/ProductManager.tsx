@@ -90,9 +90,9 @@ const ProductManager: React.FC = () => {
 
     const handleCloseModal = () => setIsModalOpen(false);
     
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        editingProduct ? updateProduct(editingProduct.id, formData) : addProduct(formData);
+        editingProduct ? await updateProduct(editingProduct.id, formData) : await addProduct(formData);
         handleCloseModal();
     };
 
@@ -134,13 +134,13 @@ const ProductManager: React.FC = () => {
         }));
     };
     
-    const handleModalFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleModalFormChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
         if (name === 'supplierId' && value === '--add-new--') {
             const newSupplierName = prompt('Nome do novo fornecedor:');
             if (newSupplierName?.trim()) {
-                const newSupplier = addSupplier({ name: newSupplierName.trim() });
+                const newSupplier = await addSupplier({ name: newSupplierName.trim() });
                 setFormData(prev => ({ ...prev, supplierId: newSupplier.id }));
             }
             return; 
@@ -204,7 +204,10 @@ const ProductManager: React.FC = () => {
 
     const handleBulkDelete = () => {
         if(window.confirm(`Tem certeza que deseja excluir ${selectedIds.size} produtos?`)){
-            setLocalProducts(prev => prev.filter(p => !selectedIds.has(p.id))); setSelectedIds(new Set());
+            const deletePromises = Array.from(selectedIds).map(id => deleteProduct(id));
+            Promise.all(deletePromises).then(() => {
+                setSelectedIds(new Set());
+            });
         }
     }
 

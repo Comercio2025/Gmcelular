@@ -1,9 +1,17 @@
 
 <!DOCTYPE html>
-<html lang="pt-br" class="dark">
+<html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // Dynamically set the base href to handle sub-directory deployments
+      (function() {
+        const path = window.location.pathname;
+        const basePath = path.substring(0, path.lastIndexOf('/') + 1);
+        document.write('<base href="' + basePath + '" />');
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GM Celular - Catálogo Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,8 +28,6 @@
       }
       body {
         font-family: var(--font-sans);
-        background-color: var(--color-background);
-        color: #E6F1FF;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
@@ -58,6 +64,6 @@
   <body class="bg-background">
     <div id="root"></div>
     <!-- Altera o tipo do script para text/babel para que o Babel possa transpilá-lo -->
-    <script type="text/babel" data-type="module" src="/index.tsx"></script>
+    <script type="text/babel" data-type="module" src="index.tsx"></script>
   </body>
 </html>

@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
             </div>
              <div className="mt-12 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold mb-4">Bem-vindo à Área do Administrador</h2>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-gray-600 dark:text-gray-300 font-normal">
                     Utilize o menu à esquerda para gerenciar todo o conteúdo do seu catálogo digital. Você pode adicionar novos produtos, organizar categorias, atualizar banners promocionais e muito mais.
                 </p>
             </div>

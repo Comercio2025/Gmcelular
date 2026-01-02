@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useData } from '../../contexts/DataContext';
 import { Product } from '../../types';
@@ -7,7 +6,7 @@ import { Download, Upload } from 'lucide-react';
 const BulkManager: React.FC = () => {
     const { 
         products, bulkUpdateProducts, categories, brands, conditions, statuses, 
-        addCategory, addBrand, addCondition, addStatus, getNextProductId
+        addCategory, addBrand, addCondition, addStatus
     } = useData();
     const [feedback, setFeedback] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
@@ -60,7 +59,7 @@ const BulkManager: React.FC = () => {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const text = e.target?.result as string;
                 const lines = text.split('\n').filter(line => line.trim());
@@ -72,21 +71,23 @@ const BulkManager: React.FC = () => {
                 const categoryRevMap = new Map(categories.map(c => [c.name.toLowerCase(), c.id]));
                 const brandRevMap = new Map(brands.map(b => [b.name.toLowerCase(), b.id]));
                 const conditionRevMap = new Map(conditions.map(c => [c.name.toLowerCase(), c.id]));
+                // FIX: Corrected typo from `c.id` to `s.id`
                 const statusRevMap = new Map(statuses.map(s => [s.name.toLowerCase(), s.id]));
                 
-                const newProductsMap = new Map<string, Product>(products.map(p => [p.id, p]));
+                const newProducts: Product[] = [];
 
-                lines.slice(1).forEach(line => {
+                for (const line of lines.slice(1)) {
                     const values = line.split(',');
+                    // FIX: Typed the accumulator to ensure `rawData` properties are strings, preventing type errors.
                     const rawData = headers.reduce((obj, header, index) => {
                         obj[header] = values[index]?.trim().replace(/"/g, '') || '';
                         return obj;
-                    }, {} as any);
+                    }, {} as Record<string, string>);
 
                     // Find or create Category
                     let categoryId = categoryRevMap.get(rawData.category?.toLowerCase());
                     if (!categoryId && rawData.category) {
-                        const newCategory = addCategory({ name: rawData.category });
+                        const newCategory = await addCategory({ name: rawData.category });
                         categoryId = newCategory.id;
                         categoryRevMap.set(newCategory.name.toLowerCase(), newCategory.id);
                     }
@@ -94,7 +95,7 @@ const BulkManager: React.FC = () => {
                     // Find or create Brand
                     let brandId = brandRevMap.get(rawData.brand?.toLowerCase());
                     if (!brandId && rawData.brand) {
-                        const newBrand = addBrand({ name: rawData.brand });
+                        const newBrand = await addBrand({ name: rawData.brand });
                         brandId = newBrand.id;
                         brandRevMap.set(newBrand.name.toLowerCase(), newBrand.id);
                     }
@@ -102,7 +103,7 @@ const BulkManager: React.FC = () => {
                     // Find or create Condition
                     let conditionId = conditionRevMap.get(rawData.condition?.toLowerCase());
                     if (!conditionId && rawData.condition) {
-                        const newCondition = addCondition({ name: rawData.condition });
+                        const newCondition = await addCondition({ name: rawData.condition });
                         conditionId = newCondition.id;
                         conditionRevMap.set(newCondition.name.toLowerCase(), newCondition.id);
                     }
@@ -110,42 +111,33 @@ const BulkManager: React.FC = () => {
                     // Find or create Status
                     let statusId = statusRevMap.get(rawData.status?.toLowerCase());
                     if (!statusId && rawData.status) {
-                        const newStatus = addStatus({ name: rawData.status });
+                        const newStatus = await addStatus({ name: rawData.status });
                         statusId = newStatus.id;
                         statusRevMap.set(newStatus.name.toLowerCase(), newStatus.id);
                     }
                     
-                    const productData: Omit<Product, 'id'> = {
-                        name: rawData.name,
+                    // FIX: Ensured required string fields have fallbacks to prevent assigning `undefined`.
+                    const productData: Product = {
+                        id: rawData.id || `new_${Date.now()}_${Math.random()}`,
+                        name: rawData.name || '',
                         details: rawData.details,
+                        // FIX: categoryId can be undefined, but Product.category must be a string. Fallback to empty string.
                         category: categoryId || '',
                         price: parseFloat(rawData.price) || 0,
                         description: rawData.description,
-                        imageUrl: rawData.imageUrl,
+                        imageUrl: rawData.imageUrl || '',
                         statusId: statusId || statuses.find(s=>s.name === 'Inativo')?.id || '',
                         conditionId: conditionId,
                         brandId: brandId,
                         reference: rawData.reference,
                     };
+                    newProducts.push(productData);
+                }
 
-                    const id = rawData.id;
-                    if (id && newProductsMap.has(id)) { // Update existing
-                        newProductsMap.set(id, { ...newProductsMap.get(id)!, ...productData });
-                    } else { // Add new
-                        // FIX: Changed const to let to allow reassignment in the while loop for collision avoidance.
-                        let newId = id || getNextProductId(); // Use ID from CSV or generate new
-                        // To avoid collisions when generating multiple new IDs
-                        while(newProductsMap.has(newId)) {
-                           newId = (parseInt(newId, 10) + 1).toString();
-                        }
-                        newProductsMap.set(newId, { id: newId, ...productData });
-                    }
-                });
-
-                bulkUpdateProducts(Array.from(newProductsMap.values()));
+                await bulkUpdateProducts(newProducts);
                 setFeedback({type: 'success', message: `Produtos foram processados com sucesso!`});
 
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Erro ao processar CSV:", error);
                 setFeedback({type: 'error', message: `Ocorreu um erro: ${error.message}`});
             }

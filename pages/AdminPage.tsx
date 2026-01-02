@@ -76,7 +76,7 @@ const AdminPage: React.FC = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto font-bold">
                 <div className="container mx-auto px-6 py-8">
                      <Routes>
                         <Route path="/" element={<Dashboard />} />

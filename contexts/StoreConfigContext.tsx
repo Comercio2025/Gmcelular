@@ -1,39 +1,61 @@
-
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { StoreConfig } from '../types';
-import { initialStoreConfig } from '../data/mockData';
+import { mockStoreConfig } from '../data/mockData';
+
+const fallbackConfig: StoreConfig = {
+    storeName: "GM Celular", slogan: "Carregando...", logoUrl: '', address: "",
+    whatsappNumber: "", instagramHandle: "",
+    colors: { primary: '#007BFF', secondary: '#0A192F' }, font: 'Inter',
+    announcementBar: { text: '', enabled: false }, headerMenu: [],
+};
 
 interface StoreConfigContextType {
   config: StoreConfig;
-  setConfig: (config: StoreConfig) => void;
+  setConfig: (config: StoreConfig) => Promise<void>;
+  loading: boolean;
 }
 
 const StoreConfigContext = createContext<StoreConfigContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'storeConfig';
-
 export const StoreConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [config, setConfigState] = useState<StoreConfig>(() => {
-    try {
-      const savedConfig = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return savedConfig ? JSON.parse(savedConfig) : initialStoreConfig;
-    } catch (error) {
-      console.error("Failed to parse store config from localStorage", error);
-      return initialStoreConfig;
-    }
-  });
+  const [config, setConfigState] = useState<StoreConfig>(fallbackConfig);
+  const [loading, setLoading] = useState(true);
 
-  const setConfig = (newConfig: StoreConfig) => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newConfig));
-      setConfigState(newConfig);
-    } catch (error) {
-      console.error("Failed to save store config to localStorage", error);
-    }
+  useEffect(() => {
+    const fetchConfig = () => {
+        setLoading(true);
+        // Simulate fetching config from an API
+        setTimeout(() => {
+            try {
+                setConfigState(mockStoreConfig);
+            } catch (error) {
+                console.error("Failed to load store config from mock data", error);
+            } finally {
+                setLoading(false);
+            }
+        }, 300); // Simulate network delay
+    };
+    fetchConfig();
+  }, []);
+
+
+  const setConfig = async (newConfig: StoreConfig) => {
+    // Optimistic update for UI responsiveness
+    setConfigState(newConfig);
+    
+    // Simulate saving to a backend
+    return new Promise<void>((resolve) => {
+        setTimeout(() => {
+            console.log("Mock config saved:", newConfig);
+            // In a real app, this would be an API call.
+            // For a better mock experience, you could persist to localStorage.
+            resolve();
+        }, 200);
+    });
   };
 
   return (
-    <StoreConfigContext.Provider value={{ config, setConfig }}>
+    <StoreConfigContext.Provider value={{ config, setConfig, loading }}>
       {children}
     </StoreConfigContext.Provider>
   );
