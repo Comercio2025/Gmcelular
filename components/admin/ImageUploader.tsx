@@ -43,7 +43,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) => {
   };
   
   const handlePaste = useCallback((e: ClipboardEvent<HTMLDivElement>) => {
-      const clipboardItem = Array.from(e.clipboardData.items).find(item => item.type.startsWith('image/'));
+      // FIX: Explicitly type 'item' as DataTransferItem to resolve type inference error on 'item.type'.
+      const clipboardItem = Array.from(e.clipboardData.items).find((item: DataTransferItem) => item.type.startsWith('image/'));
       if (clipboardItem) {
           handleFile(clipboardItem.getAsFile());
       }

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useData } from '../../contexts/DataContext';
 import { Product } from '../../types';
@@ -78,11 +79,12 @@ const BulkManager: React.FC = () => {
 
                 for (const line of lines.slice(1)) {
                     const values = line.split(',');
-                    // FIX: Typed the accumulator to ensure `rawData` properties are strings, preventing type errors.
-                    const rawData = headers.reduce((obj, header, index) => {
-                        obj[header] = values[index]?.trim().replace(/"/g, '') || '';
-                        return obj;
-                    }, {} as Record<string, string>);
+                    // FIX: Replaced reduce with a forEach loop to resolve 'unknown' type errors.
+                    // This makes the type of `rawData` explicit and avoids type inference issues with `reduce`.
+                    const rawData: Record<string, string> = {};
+                    headers.forEach((header, index) => {
+                        rawData[header] = values[index]?.trim().replace(/"/g, '') || '';
+                    });
 
                     // Find or create Category
                     let categoryId = categoryRevMap.get(rawData.category?.toLowerCase());

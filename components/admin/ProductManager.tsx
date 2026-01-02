@@ -180,7 +180,8 @@ const ProductManager: React.FC = () => {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, id: string) => handleImageFile(e.target.files?.[0] ?? null, id);
     const handleImagePaste = (e: React.ClipboardEvent, id: string) => {
         e.preventDefault();
-        const item = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'));
+        // FIX: Explicitly type 'item' as DataTransferItem to resolve type inference error on 'item.type'.
+        const item = Array.from(e.clipboardData.items).find((item: DataTransferItem) => item.type.startsWith('image/'));
         if (item) handleImageFile(item.getAsFile(), id);
     };
     
