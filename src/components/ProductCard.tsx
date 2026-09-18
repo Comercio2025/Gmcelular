@@ -7,6 +7,17 @@ interface ProductCardProps {
     product: Product;
 }
 
+const getConditionBadgeStyle = (condition: string) => {
+    const normalized = (condition || '').trim().toLowerCase();
+    if (normalized.includes('lacrado') || normalized.includes('novo')) {
+        return 'bg-emerald-600 text-white font-extrabold border border-emerald-400/50 shadow-lg';
+    }
+    if (normalized.includes('swap')) {
+        return 'bg-red-600 text-white font-extrabold border border-red-400/50 shadow-lg';
+    }
+    return 'bg-amber-600 text-white font-extrabold border border-amber-400/50 shadow-lg';
+};
+
 export const ProductCard = ({ product }: ProductCardProps) => {
     const { config } = useData();
 
@@ -41,12 +52,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <Link to={`/product/${product.id}`} className="glass-card rounded-2xl p-4 flex flex-col h-full group relative overflow-hidden ring-1 ring-white/5 hover:ring-primary/50 transition-all duration-300">
             {/* Condition Badge */}
             <div className="absolute top-2 left-2 z-20 flex gap-2">
-                <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border border-white/10 ${product.condition === 'Novo' ? 'bg-green-500/20 text-green-300' : 'bg-blue-500/20 text-blue-300'
-                    }`}>
+                <span className={`px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider backdrop-blur-md ${getConditionBadgeStyle(product.condition)}`}>
                     {product.condition}
                 </span>
                 {product.status === 'por_encomenda' && (
-                    <span className="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-300 backdrop-blur-md border border-white/10 flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-orange-600 text-white backdrop-blur-md border border-orange-400/50 flex items-center gap-1 shadow-lg">
                         <AlertCircle className="w-3 h-3" /> Sob Encomenda
                     </span>
                 )}
