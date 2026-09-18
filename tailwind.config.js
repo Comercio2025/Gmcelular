@@ -4,6 +4,17 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    'bg-[#059669]',
+    'bg-[#dc2626]',
+    'bg-[#d97706]',
+    'border-[#34d399]/70',
+    'border-[#f87171]/70',
+    'border-[#fbbf24]/70',
+    'bg-emerald-600',
+    'bg-red-600',
+    'bg-amber-600',
+  ],
   theme: {
     extend: {
       colors: {

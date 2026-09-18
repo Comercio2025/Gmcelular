@@ -10,12 +10,12 @@ interface ProductCardProps {
 const getConditionBadgeStyle = (condition: string) => {
     const normalized = (condition || '').trim().toLowerCase();
     if (normalized.includes('lacrado') || normalized.includes('novo')) {
-        return 'bg-emerald-600 text-white font-extrabold border border-emerald-400/50 shadow-lg';
+        return 'bg-[#059669] text-white font-extrabold border border-[#34d399]/70 shadow-lg';
     }
     if (normalized.includes('swap')) {
-        return 'bg-red-600 text-white font-extrabold border border-red-400/50 shadow-lg';
+        return 'bg-[#dc2626] text-white font-extrabold border border-[#f87171]/70 shadow-lg';
     }
-    return 'bg-amber-600 text-white font-extrabold border border-amber-400/50 shadow-lg';
+    return 'bg-[#d97706] text-white font-extrabold border border-[#fbbf24]/70 shadow-lg';
 };
 
 export const ProductCard = ({ product }: ProductCardProps) => {

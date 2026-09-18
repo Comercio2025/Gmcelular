@@ -68,12 +68,12 @@ export const ProductDetailPage = () => {
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                             <div className="absolute top-4 left-4 flex gap-2">
-                                <span className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wider backdrop-blur-xl ${
+                                <span className={`px-3 py-1.5 rounded-xl text-xs font-extrabold uppercase tracking-wider backdrop-blur-md ${
                                     (product.condition || '').toLowerCase().includes('lacrado') || (product.condition || '').toLowerCase().includes('novo')
-                                        ? 'bg-emerald-600 text-white border border-emerald-400/50 shadow-lg'
+                                        ? 'bg-[#059669] text-white border border-[#34d399]/70 shadow-lg'
                                         : (product.condition || '').toLowerCase().includes('swap')
-                                        ? 'bg-red-600 text-white border border-red-400/50 shadow-lg'
-                                        : 'bg-amber-600 text-white border border-amber-400/50 shadow-lg'
+                                        ? 'bg-[#dc2626] text-white border border-[#f87171]/70 shadow-lg'
+                                        : 'bg-[#d97706] text-white border border-[#fbbf24]/70 shadow-lg'
                                 }`}>
                                     {product.condition}
                                 </span>

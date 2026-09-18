@@ -33,3 +33,25 @@
     @apply w-full bg-[#0a192f] text-white placeholder-gray-500 border border-blue-500/20 rounded-none px-4 py-3 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all font-mono;
   }
 }
+
+.badge-lacrado {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(52, 211, 153, 0.7) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5) !important;
+}
+.badge-swap {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(248, 113, 113, 0.7) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5) !important;
+}
+.badge-outros {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(251, 191, 36, 0.7) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.5) !important;
+}
