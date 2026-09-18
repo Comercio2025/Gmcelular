@@ -1,0 +1,57 @@
+:root {
+    --color-primary: #007BFF;
+    /* Azul Elétrico */
+    --color-secondary: #0A192F;
+    /* Azul Petróleo Escuro */
+    --color-background: #020c1b;
+    --font-sans: 'Inter', sans-serif;
+    --font-heading: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-background);
+    color: white;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+.glassmorphism {
+    background: rgba(10, 25, 47, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom scrollbar */
+.category-nav::-webkit-scrollbar {
+    height: 4px;
+}
+
+.category-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.category-nav::-webkit-scrollbar-thumb {
+    background: #4A5568;
+    border-radius: 10px;
+}
+
+.category-nav::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+.category-nav {
+    scrollbar-width: thin;
+    scrollbar-color: #4A5568 transparent;
+}
