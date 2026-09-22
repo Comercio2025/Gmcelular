@@ -6,7 +6,13 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'gmso3652_teste');
 define('DB_PASS', 'zUt6kO7,=&mwvvcK'); // Senha padrão XAMPP/WAMP é vazia, MAMP é 'root'
 define('DB_NAME', 'gmso3652_celular');
-define('GEMINI_API_KEY', ''); // Opcional: também pode salvar no painel em Configurações > Gemini API Key
+
+if (file_exists(__DIR__ . '/secrets.php')) {
+    include_once __DIR__ . '/secrets.php';
+}
+if (!defined('GEMINI_API_KEY')) {
+    define('GEMINI_API_KEY', getenv('GEMINI_API_KEY') ?: '');
+}
 
 // ONLINE (Descomente para usar em produção)
 // define('DB_HOST', 'localhost');

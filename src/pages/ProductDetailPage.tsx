@@ -47,6 +47,26 @@ export const ProductDetailPage = () => {
         }
     };
 
+    const formatDisplayDescription = (desc?: string): string => {
+        if (!desc || !desc.trim()) {
+            return "Nenhuma descrição detalhada disponível para este item.";
+        }
+        let text = desc
+            .replace(/\\r\\n/g, '\n')
+            .replace(/\\n/g, '\n')
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n');
+
+        if (!text.includes('\n')) {
+            text = text
+                .replace(/([^\n])\s*[•*]\s*/g, '$1\n• ')
+                .replace(/^[•*]\s*/, '• ')
+                .replace(/\s*(CONDIÇÃO[^\n:]*:|OBSERVAÇ[ÕO]ES[^\n:]*:|GARANTIA[^\n:]*:)/gi, '\n\n$1\n');
+        }
+
+        return text.trim();
+    };
+
     return (
         <Layout>
             <div className="py-8">
@@ -137,9 +157,9 @@ export const ProductDetailPage = () => {
                                 <ShieldCheck className="w-5 h-5 text-blue-400" />
                                 Sobre o Produto
                             </h3>
-                            <p className="text-gray-400 leading-relaxed text-lg font-light">
-                                {product.description || "Nenhuma descrição detalhada disponível para este item."}
-                            </p>
+                            <div className="text-gray-300 leading-relaxed text-base sm:text-lg font-light whitespace-pre-line bg-surface/30 p-5 rounded-2xl border border-white/5">
+                                {formatDisplayDescription(product.description)}
+                            </div>
                         </div>
 
                         {/* CTA Section */}

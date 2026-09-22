@@ -95,6 +95,15 @@ interface DataContextType {
   recommendSmartphonesAI: (
     payload: AIRecommendationRequest,
   ) => Promise<AIRecommendationResponse>;
+  enhanceProductDescriptionAI: (params: {
+    name?: string;
+    description?: string;
+    brand?: string;
+    model?: string;
+    condition?: string;
+    category?: string;
+    mode?: "format" | "generate" | "bullets";
+  }) => Promise<string>;
 
   updateConfig: (config: Partial<StoreConfig>) => Promise<void>;
 }
@@ -599,6 +608,32 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
+  const enhanceProductDescriptionAI = async (params: {
+    name?: string;
+    description?: string;
+    brand?: string;
+    model?: string;
+    condition?: string;
+    category?: string;
+    mode?: "format" | "generate" | "bullets";
+  }): Promise<string> => {
+    const response = await fetch("api/index.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "enhance_product_description_ai",
+        ...params,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      throw new Error(data.error || "Falha ao aprimorar descrição com IA");
+    }
+
+    return data.description || "";
+  };
+
   const updateConfig = async (newConfig: Partial<StoreConfig>) => {
     setConfig((prev) => ({ ...prev, ...newConfig }));
     try {
@@ -659,6 +694,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         deleteArticle,
         generateArticleAI,
         recommendSmartphonesAI,
+        enhanceProductDescriptionAI,
         updateConfig,
       }}
     >

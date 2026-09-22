@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Calculator, Upload } from 'lucide-react';
+import { X, Calculator, Upload, Sparkles, RotateCcw, Eye, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import type { Product } from '../types';
 import { useData } from '../contexts/DataContext';
 import { processImage, uploadFile } from '../utils/imageUtils';
@@ -11,7 +11,7 @@ interface ProductFormProps {
 }
 
 export const ProductForm = ({ initialProduct, onClose, onSave }: ProductFormProps) => {
-    const { categories, brands, conditions, statuses } = useData();
+    const { categories, brands, conditions, statuses, enhanceProductDescriptionAI } = useData();
     const [formData, setFormData] = useState<Partial<Product>>({
         name: '',
         description: '',
@@ -31,6 +31,13 @@ export const ProductForm = ({ initialProduct, onClose, onSave }: ProductFormProp
     // Calculator State
     const [showCalculator, setShowCalculator] = useState(false);
     const [markup, setMarkup] = useState(30); // 30% default
+
+    // AI Description Assistant State
+    const [isEnhancing, setIsEnhancing] = useState(false);
+    const [aiSuccessMsg, setAiSuccessMsg] = useState<string | null>(null);
+    const [aiErrorMsg, setAiErrorMsg] = useState<string | null>(null);
+    const [previousDescription, setPreviousDescription] = useState<string | null>(null);
+    const [isPreviewingDescription, setIsPreviewingDescription] = useState(false);
 
     useEffect(() => {
         if (initialProduct) {
@@ -121,6 +128,57 @@ export const ProductForm = ({ initialProduct, onClose, onSave }: ProductFormProp
         const cost = formData.costPrice || 0;
         const price = cost * (1 + markup / 100);
         setFormData(prev => ({ ...prev, price: Math.ceil(price) })); // Round up
+    };
+
+    const handleEnhanceDescription = async (mode: 'format' | 'generate' | 'bullets' = 'format') => {
+        if (!formData.name && !formData.description) {
+            setAiErrorMsg('Preencha o Nome do produto ou uma descrição antes de acionar a IA.');
+            setTimeout(() => setAiErrorMsg(null), 4000);
+            return;
+        }
+
+        try {
+            setIsEnhancing(true);
+            setAiErrorMsg(null);
+            setAiSuccessMsg(null);
+
+            setPreviousDescription(formData.description || '');
+
+            const formatted = await enhanceProductDescriptionAI({
+                name: formData.name,
+                description: formData.description,
+                brand: formData.brand,
+                model: formData.model,
+                condition: formData.condition,
+                category: formData.category,
+                mode,
+            });
+
+            if (formatted) {
+                setFormData(prev => ({ ...prev, description: formatted }));
+                setAiSuccessMsg(
+                    mode === 'generate'
+                        ? '✨ Descrição criada com sucesso pelo Gemini!'
+                        : '✨ Descrição formatada e quebras de linha ajustadas com sucesso!'
+                );
+                setTimeout(() => setAiSuccessMsg(null), 4000);
+            }
+        } catch (error: any) {
+            console.error(error);
+            setAiErrorMsg(error?.message || 'Erro ao comunicar com a IA do Gemini.');
+            setTimeout(() => setAiErrorMsg(null), 5000);
+        } finally {
+            setIsEnhancing(false);
+        }
+    };
+
+    const handleUndoDescription = () => {
+        if (previousDescription !== null) {
+            setFormData(prev => ({ ...prev, description: previousDescription }));
+            setPreviousDescription(null);
+            setAiSuccessMsg('↩ Descrição anterior restaurada.');
+            setTimeout(() => setAiSuccessMsg(null), 3000);
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -273,9 +331,105 @@ export const ProductForm = ({ initialProduct, onClose, onSave }: ProductFormProp
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                        <textarea name="description" value={formData.description || ''} onChange={handleChange} rows={4} className="input-field w-full border-gray-300" />
+                    {/* Descrição com Assistente Gemini IA */}
+                    <div className="space-y-3 pt-2 border-t border-white/5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <label className="block text-[10px] font-mono font-bold text-blue-300/80 uppercase tracking-widest">
+                                Descrição do Produto
+                            </label>
+
+                            {/* Botões de Ação com IA */}
+                            <div className="flex items-center flex-wrap gap-2">
+                                {previousDescription !== null && (
+                                    <button
+                                        type="button"
+                                        onClick={handleUndoDescription}
+                                        className="text-xs px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded border border-white/10 flex items-center gap-1.5 transition-colors cursor-pointer"
+                                        title="Restaurar a descrição anterior antes da alteração da IA"
+                                    >
+                                        <RotateCcw className="w-3.5 h-3.5" />
+                                        <span>Desfazer</span>
+                                    </button>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPreviewingDescription(!isPreviewingDescription)}
+                                    className={`text-xs px-2.5 py-1.5 rounded border flex items-center gap-1.5 transition-colors cursor-pointer ${
+                                        isPreviewingDescription 
+                                            ? 'bg-blue-600 text-white border-blue-500 shadow-sm' 
+                                            : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+                                    }`}
+                                    title="Alternar entre editar e visualizar como o cliente vê no site"
+                                >
+                                    {isPreviewingDescription ? <FileText className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                    <span>{isPreviewingDescription ? 'Voltar para Editor' : 'Pré-visualizar na Loja'}</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleEnhanceDescription('format')}
+                                    disabled={isEnhancing}
+                                    className="text-xs font-semibold px-3 py-1.5 rounded bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white flex items-center gap-1.5 shadow-lg shadow-blue-500/20 disabled:opacity-50 transition-all cursor-pointer"
+                                    title="Corrige pontuação, quebra em linhas limpas e organiza tópicos com Gemini"
+                                >
+                                    {isEnhancing ? (
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                                    )}
+                                    <span>{isEnhancing ? 'Formatando com Gemini...' : '✨ Formatar & Quebrar Linhas (IA)'}</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleEnhanceDescription('generate')}
+                                    disabled={isEnhancing}
+                                    className="text-xs px-2.5 py-1.5 rounded bg-surface hover:bg-surface/80 text-blue-300 border border-blue-500/30 flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+                                    title="Cria uma descrição persuasiva completa do zero usando o nome e categoria"
+                                >
+                                    <span>🪄 Criar Descrição</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Avisos e Feedbacks */}
+                        {aiSuccessMsg && (
+                            <div className="flex items-center gap-2 p-2.5 rounded bg-green-500/10 border border-green-500/30 text-green-400 text-xs animate-fade-in">
+                                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                                <span>{aiSuccessMsg}</span>
+                            </div>
+                        )}
+                        {aiErrorMsg && (
+                            <div className="p-2.5 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-xs animate-fade-in">
+                                {aiErrorMsg}
+                            </div>
+                        )}
+
+                        {/* Editor de Texto vs Visualizador Prévia */}
+                        {isPreviewingDescription ? (
+                            <div className="w-full bg-[#071322] border border-blue-500/30 p-4 rounded min-h-[160px] text-gray-300 whitespace-pre-line text-sm leading-relaxed shadow-inner font-sans">
+                                {formData.description ? (
+                                    formData.description
+                                ) : (
+                                    <span className="text-gray-500 italic">Nenhuma descrição informada para pré-visualizar.</span>
+                                )}
+                            </div>
+                        ) : (
+                            <textarea
+                                name="description"
+                                value={formData.description || ''}
+                                onChange={handleChange}
+                                rows={6}
+                                placeholder="Digite ou cole a descrição. Clique em '✨ Formatar & Quebrar Linhas (IA)' para organizar em tópicos limpos!"
+                                className="w-full bg-surface border border-white/10 p-3 text-white focus:border-blue-500/50 outline-none transition-all font-mono text-sm leading-relaxed"
+                            />
+                        )}
+
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-gray-400 px-1">
+                            <span>💡 A IA quebra em tópicos com marcadores (•) e destaca observações de bateria/trocas (Swap).</span>
+                            <span>{formData.description ? `${formData.description.length} caracteres` : 'Vazio'}</span>
+                        </div>
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-white/5">

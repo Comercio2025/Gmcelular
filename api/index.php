@@ -37,10 +37,12 @@ function getStoreConfigValue($pdo, $key, $default = '')
 function extractJsonFromText($text)
 {
     $text = trim((string) $text);
-    $decoded = json_decode($text, true);
+    $cleaned = preg_replace('/^```(?:json)?\s*/i', '', $text);
+    $cleaned = preg_replace('/\s*```$/', '', $cleaned);
+    $decoded = json_decode($cleaned, true);
     if (is_array($decoded)) return $decoded;
 
-    if (preg_match('/\\{[\\s\\S]*\\}/', $text, $matches)) {
+    if (preg_match('/\{[\s\S]*\}/', $cleaned, $matches)) {
         $candidate = $matches[0];
         $decoded = json_decode($candidate, true);
         if (is_array($decoded)) return $decoded;
@@ -267,7 +269,16 @@ if ($method === 'GET') {
                 'pages' => $pdo->query("SELECT * FROM pages ORDER BY order_index ASC")->fetchAll(), // Now includes all columns
                 'filters' => $pdo->query("SELECT * FROM custom_filters ORDER BY order_index ASC")->fetchAll(),
                 'articles' => $pdo->query("SELECT * FROM articles ORDER BY order_index DESC, id DESC")->fetchAll(),
-                'config' => $pdo->query("SELECT config_key, config_value FROM store_config")->fetchAll(PDO::FETCH_KEY_PAIR)
+                'config' => (function() use ($pdo) {
+                    $c = $pdo->query("SELECT config_key, config_value FROM store_config")->fetchAll(PDO::FETCH_KEY_PAIR);
+                    if (empty($c['geminiApiKey']) && defined('GEMINI_API_KEY') && GEMINI_API_KEY !== '') {
+                        $c['geminiApiKey'] = GEMINI_API_KEY;
+                    }
+                    if (empty($c['geminiModel'])) {
+                        $c['geminiModel'] = 'gemini-2.5-flash';
+                    }
+                    return $c;
+                })()
             ];
             jsonResponse($data);
         }
@@ -770,6 +781,79 @@ PROMPT;
                     'excerpt' => $excerpt,
                     'content' => $content,
                     'tags' => $tags,
+                ]);
+                break;
+
+            case 'enhance_product_description_ai':
+                $name = trim((string) ($input['name'] ?? ''));
+                $currentDescription = trim((string) ($input['description'] ?? ''));
+                $brand = trim((string) ($input['brand'] ?? ''));
+                $modelName = trim((string) ($input['model'] ?? ''));
+                $condition = trim((string) ($input['condition'] ?? ''));
+                $category = trim((string) ($input['category'] ?? ''));
+                $mode = trim((string) ($input['mode'] ?? 'format')); // 'format' | 'generate' | 'bullets'
+
+                if ($name === '' && $currentDescription === '') {
+                    jsonResponse(['error' => 'Informe ao menos o nome do produto ou a descrição atual.'], 400);
+                }
+
+                $apiKey = trim((string) getStoreConfigValue($pdo, 'geminiApiKey', ''));
+                if ($apiKey === '') {
+                    $apiKey = defined('GEMINI_API_KEY') ? trim((string) GEMINI_API_KEY) : '';
+                }
+                if ($apiKey === '') {
+                    jsonResponse(['error' => 'Gemini API Key não configurada.'], 400);
+                }
+
+                $model = trim((string) getStoreConfigValue($pdo, 'geminiModel', 'gemini-2.5-flash'));
+                if ($model === '') $model = 'gemini-2.5-flash';
+
+                $instruction = match($mode) {
+                    'generate' => 'Crie uma descrição completa, atraente e persuasiva para o produto na loja online, destacando suas principais qualidades e especificações técnicas.',
+                    'bullets' => 'Organize as especificações e características em tópicos curtos e objetivos (com marcador •), pulando linha para cada especificação.',
+                    default => 'Aprimore e corrija a formatação da descrição atual. Quebre em linhas bem definidas com marcadores (•), elimine textos embolados/amontoados, ajuste pontuação e padronize letras maiúsculas. Mantenha fielmente todas as informações técnicas e observações (como CONDIÇÃO SWAP, detalhes de peças substituídas, garantia ou observações de bateria).'
+                };
+
+                $prompt = <<<PROMPT
+Você é um especialista em redação e formatação de catálogos para a loja de celulares e tecnologia "GM Celular".
+Sua tarefa é formatar e aprimorar a descrição do produto para exibição na página de vendas, garantindo que as quebras de linha fiquem perfeitamente estruturadas.
+
+Dados do Produto:
+- Nome: {$name}
+- Marca: {$brand}
+- Modelo: {$modelName}
+- Condição: {$condition}
+- Categoria: {$category}
+- Descrição Informada Atualmente:
+{$currentDescription}
+
+Instrução:
+{$instruction}
+
+Regras Essenciais de Formatação:
+1. QUEBRA DE LINHA OBRIGATÓRIA: cada especificação técnica ou tópico DEVE estar em sua própria linha usando quebra de linha (\\n) e iniciar com marcador "• " (ou "- ").
+2. Não junte vários tópicos em um único parágrafo corrido.
+3. Se houver informações de "CONDIÇÃO SWAP" ou observações sobre componentes/peças/bateria, separe em uma seção própria pulando uma linha (\\n\\n) com o título "CONDIÇÃO SWAP:" ou "OBSERVAÇÕES:".
+4. Evite usar asteriscos de negrito do markdown (ex: **não use**), pois o texto será exibido diretamente no site com quebra de linha simples.
+5. Português do Brasil claro, profissional e comercial.
+6. Nunca invente dados técnicos contraditórios aos informados.
+
+Retorne SOMENTE um JSON válido com o campo "description":
+{
+  "description": "Texto formatado com quebras de linha explícitas (\\n) e tópicos"
+}
+PROMPT;
+
+                $generated = callGeminiGenerate($prompt, $apiKey, $model);
+                $formattedDesc = trim((string) ($generated['description'] ?? ''));
+
+                if ($formattedDesc === '') {
+                    jsonResponse(['error' => 'A IA não retornou a descrição formatada.'], 500);
+                }
+
+                jsonResponse([
+                    'success' => true,
+                    'description' => $formattedDesc
                 ]);
                 break;
 

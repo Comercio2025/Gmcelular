@@ -222,9 +222,9 @@ export const SettingsManager = () => {
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Gemini API Key (IA para Artigos)</label>
-                            <input name="geminiApiKey" type="password" defaultValue={config.geminiApiKey} className="input-field w-full" placeholder="AIza..." />
-                            <p className="text-xs text-gray-400 mt-1">Usada no botão de gerar artigos com IA no painel de Artigos.</p>
+                            <label className="block text-sm font-medium text-gray-400 mb-1">Gemini API Key (IA para Descrições e Artigos)</label>
+                            <input name="geminiApiKey" type="password" defaultValue={config.geminiApiKey} className="input-field w-full" placeholder="AIza... ou AQ..." />
+                            <p className="text-xs text-gray-400 mt-1">Usada para formatar e quebrar linhas nas descrições de produtos e gerar artigos com IA.</p>
                         </div>
 
                         <div className="mt-4">
