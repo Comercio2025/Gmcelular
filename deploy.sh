@@ -55,10 +55,30 @@ for TARGET_DIR in "${TARGET_DIRS[@]}"; do
     "${ASSET_FILES[@]}" \
     "$SSH_USER@$SSH_HOST:$TARGET_DIR/assets/"
 
+  # Upload API Backend
   sshpass -p "$SSH_PASS" ssh -p "$SSH_PORT" \
     -o StrictHostKeyChecking=no \
     -o PreferredAuthentications=password \
-    "$SSH_USER@$SSH_HOST" "chmod 755 $TARGET_DIR && chmod -R 755 $TARGET_DIR/assets"
+    "$SSH_USER@$SSH_HOST" "mkdir -p $TARGET_DIR/api"
+
+  sshpass -p "$SSH_PASS" scp -P "$SSH_PORT" \
+    -o StrictHostKeyChecking=no \
+    -o PreferredAuthentications=password \
+    "$ROOT/api/index.php" "$ROOT/api/config.php" \
+    "$SSH_USER@$SSH_HOST:$TARGET_DIR/api/"
+
+  if [ -f "$ROOT/api/secrets.php" ]; then
+    sshpass -p "$SSH_PASS" scp -P "$SSH_PORT" \
+      -o StrictHostKeyChecking=no \
+      -o PreferredAuthentications=password \
+      "$ROOT/api/secrets.php" \
+      "$SSH_USER@$SSH_HOST:$TARGET_DIR/api/"
+  fi
+
+  sshpass -p "$SSH_PASS" ssh -p "$SSH_PORT" \
+    -o StrictHostKeyChecking=no \
+    -o PreferredAuthentications=password \
+    "$SSH_USER@$SSH_HOST" "chmod 755 $TARGET_DIR && chmod -R 755 $TARGET_DIR/assets && chmod -R 755 $TARGET_DIR/api"
 done
 
 # ── 4. CONFIRMAÇÃO ────────────────────────────────

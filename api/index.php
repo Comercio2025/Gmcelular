@@ -87,6 +87,7 @@ function callGeminiGenerate($prompt, $apiKey, $model = 'gemini-2.5-flash')
                 'x-goog-api-key: ' . $apiKey
             ],
             CURLOPT_POSTFIELDS => $jsonBody,
+            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
             CURLOPT_TIMEOUT => 40,
             CURLOPT_CONNECTTIMEOUT => 8
         ]);

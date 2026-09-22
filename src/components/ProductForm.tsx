@@ -432,13 +432,30 @@ export const ProductForm = ({ initialProduct, onClose, onSave }: ProductFormProp
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-                        <button type="button" onClick={onClose} className="px-6 py-2 rounded-xl hover:bg-background text-gray-400 transition-colors">
-                            Cancelar
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-white/10">
+                        <button
+                            type="button"
+                            onClick={() => handleEnhanceDescription('format')}
+                            disabled={isEnhancing}
+                            className="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 disabled:opacity-50 transition-all cursor-pointer border border-blue-400/40 active:scale-95"
+                            title="Organiza o texto em tópicos limpos e quebras de linha com Gemini IA"
+                        >
+                            {isEnhancing ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
+                            )}
+                            <span>{isEnhancing ? 'Aprimorando com Gemini...' : '✨ Formatar Descrição com IA'}</span>
                         </button>
-                        <button type="submit" className="btn-primary px-8">
-                            Salvar Produto
-                        </button>
+
+                        <div className="flex items-center justify-end gap-3">
+                            <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl hover:bg-background text-gray-400 transition-colors">
+                                Cancelar
+                            </button>
+                            <button type="submit" className="btn-primary px-8 py-2.5">
+                                Salvar Produto
+                            </button>
+                        </div>
                     </div>
                 </form>
 
